@@ -10,6 +10,15 @@ class Phonebook
     end
   end
 
-end
+  def print(filename)
 
-Phonebook.new.create "der"
+    path = "phonebooks/#{filename}.pb"
+
+    if File.exists? path
+      puts File.read path
+    else
+      puts "File doesn't exist!"
+    end
+  end
+
+end

@@ -8,12 +8,13 @@ class PBTest < Test::Unit::TestCase
     @testpb.create("testerpb")
   end
 
-  def testcreate
-    assert_equal true, File.exist?("testerpb.pb")
+  def test_create
+    assert_equal true, File.exist?("phonebooks/testerpb.pb")
   end
 
   def teardown
-    File.delete "testerpb.pb"
+    File.delete "phonebooks/testerpb.pb"
   end
+
 end
 
