@@ -2,5 +2,5 @@
 
 require_relative 'phonebook.rb'
 
-command = ARGV[0].to_sym
-Phonebook.new.send(command, ARGV[1])
+command = ARGV.shift.to_sym
+Phonebook.new(ARGV).send(command, ARGV)

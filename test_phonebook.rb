@@ -12,6 +12,12 @@ class PBTest < Test::Unit::TestCase
     assert_equal true, File.exist?("phonebooks/testerpb.pb")
   end
 
+  # def test_print
+  #
+  #   @testpb.print("phonebooks/testerpb.pb")
+  #   assert_output
+  # end
+
   def teardown
     File.delete "phonebooks/testerpb.pb"
   end
