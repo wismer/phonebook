@@ -4,45 +4,80 @@ require 'pry'
 
 class Phonebook
 
-  attr_accessor :filename, :content, :params
+  attr_accessor :filename, :content, :flag
 
-  def initialize(filename, params)
-    @filename = "phonebooks/" + filename += ".pb"
-    @params = params
+  def initialize(args)
+    @file     = "phonebook.pb"
+    @flag     = args.shift
+    @content  = args
   end
 
-  def phonebook?
-    File.exists? @filename
-  end
 
-  def create
-    if !phonebook?
-      File.new @filename, 'w'
-      puts "New phonebook \"#{@filename}\" created"
-    else
-      puts "File already exists!"
+  # -cat rickshaw
+  # -new rickshaw <name> <phone>
+  # -find -a <name>
+  # -show
+  def start
+    case @flag
+    when '-c'
+      # new category
+      create_category
+    when '-n'
+      create_entry
+    when '-show'
+      show_data
     end
   end
 
-  def add
-    @content[@params[0]] = @params[1]
+  def show_data
+    arg = @content.shift
+    binding.pry
+    if arg == "-a"
+      name, phone = @content
+      from_json.each do |k, v|
+        v.each do |e|
+          if e['name'].include?(name)
+            puts e
+          end
+        end
+      end
+    end
   end
 
-  def open
-    @content ||= File.read @filename if phonebook?
-    JSON.parse @content
+  def create_category(cat=nil)
+    data = File.read(@file)
+    if data.empty?
+      File.open(@file, 'w') { |io| io << JSON.generate({"#{@content.shift}" => []}) }
+    else
+      file_data = JSON.parse(data)
+      file_data[@content.shift] = []
+      File.open(@file, 'w') { |io| io << JSON.generate(file_data) }
+    end
   end
 
-  def print
-    # path = "phonebooks/#{filename}.pb"
-    # if File.exists? path
-    #   puts File.read path
-    # else
-    #   puts "File doesn't exist!"
-    # end
+  def from_json
+    JSON.parse(File.read(@file))
   end
 
+  def write_to_file(data)
+    File.open(@file, "w") { |io| io << data }
+  end
+
+  def create_entry
+    cat = @content.shift
+    if from_json[cat]
+      data = from_json
+      data[cat] << { name: @content.shift, phone: @content.shift }
+      write_to_file(JSON.generate(data))
+    else
+      puts "That category was not found"
+    end
+  end
+
+  def read_data
+    File.read(@file)
+  end
 end
 
-x = Phonebook.new "test"
-binding.pry
+x = Phonebook.new ARGV
+x.start
