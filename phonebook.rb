@@ -1,7 +1,7 @@
 require 'json'
 require 'pry'
 class Phonebook
-  attr_accessor :filename, :content, :flag, :json_data
+  attr_accessor :file, :content, :flag, :json_data
 
   def initialize(args)
     @file      = "phonebook.pb"
@@ -95,22 +95,25 @@ class Phonebook
   def edit_entry
     cat = @content.shift
     opt = @content.shift
-    if opt == 'name'
-      old_name, new_name = @content
-      @json_data.each do |k,v|
-        v.each do |val|
-          if val['name'] == old_name
-            val['name'] = new_name
+    if @json_data.keys.include?(cat)
+      if opt == 'name'
+        old_name, new_name = @content
+        @json_data.each do |k,v|
+          v.each do |val|
+            if val['name'] == old_name
+              val['name'] = new_name
+            end
           end
         end
+      elsif opt == 'phone'
+        old_phone, new_phone = @content
+        @json_data[cat].find{ |e| e['phone'] == old_phone }['phone'] = new_phone
+      else
+        raise 'invalid opts'
       end
-    elsif opt == 'phone'
-      old_phone, new_phone = @content
-      @json_data[cat].find{ |e| e['phone'] == old_phone }['phone'] = new_phone
-    else
-      raise 'invalid opts'
+      write_to_file
     end
-    write_to_file
+    @json_data
   end
 
   def show_data
@@ -131,30 +134,41 @@ class Phonebook
 
   def create_category
     if @json_data.empty?
-      File.open(@file, 'w') { |io| io << JSON.generate({"#{@content.shift}" => []}) }
+      write_to_file({"#{@content.shift}" => []})
     else
-      @json_data[@content.shift] = []
-      write_to_file
+      cat = @content.shift
+      if @json_data[cat].nil?
+        @json_data[cat] = []
+        write_to_file
+      else
+        puts 'Category already exists'
+      end
     end
+    @json_data
   end
 
   def from_json
     JSON.parse(File.read(@file))
   end
 
-  def write_to_file
-    File.open(@file, "w") { |io| io << JSON.generate(@json_data) }
+  def write_to_file(default=nil)
+    File.open(@file, "w") { |io| io << JSON.generate(default || @json_data) }
   end
 
   def create_entry
     cat, name, phone = @content
 
-    if @json_data[cat] 
-      @json_data[cat] << { name: name, phone: phone }
+    if @json_data[cat]
+      if @json_data[cat].find { |e| e['name'] == name || e['phone'] == phone }.nil?
+        @json_data[cat] << { name: name, phone: phone }
+      else
+        puts 'That name already exists'
+      end
     else
       puts "That category was not found"
     end
     write_to_file
+    @json_data
   end
 end
 
