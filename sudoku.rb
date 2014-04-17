@@ -51,16 +51,8 @@ class SudokuMaker
     @grid[sqr[@index / 3]].map { |x| x[sqr[@elem / 3]] }.flatten
   end
 
-  def sqr_map
-    sqr[@index]
-  end
-
   def sqr
     SQUARES[@index / 3]
-  end
-
-  def vertical
-    
   end
 
   def show
